@@ -1,0 +1,23 @@
+{
+  "name": "liveavatar-agent-skills",
+  "version": "1.0.0",
+  "description": "Agent skills for integrating LiveAvatar real-time AI avatars into your product",
+  "keywords": [
+    "liveavatar",
+    "heygen",
+    "avatar",
+    "real-time",
+    "ai",
+    "livekit",
+    "webrtc",
+    "voice-ai",
+    "claude-code",
+    "skills"
+  ],
+  "author": "HeyGen",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heygen-com/liveavatar-agent-skills"
+  }
+}
