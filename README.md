@@ -8,6 +8,7 @@ Reusable skills for AI coding agents integrating with [LiveAvatar](https://livea
 |-------|-------------|
 | **liveavatar-integrate** | End-to-end integration builder — assesses your existing stack, recommends the optimal path (Embed / FULL / LITE), and guides implementation step by step. |
 | **liveavatar-debug** | Symptom-based troubleshooting for silent avatars, garbled audio, auth errors, and more. |
+| **liveavatar-feedback** | Collects user feedback on their LiveAvatar integration experience and sends it to the LiveAvatar team. Triggers after implementation, on frustration, or on explicit request. |
 
 ## Installation
 
@@ -59,6 +60,7 @@ skill-name/
 | Use your own LLM / TTS / full pipeline | `liveavatar-integrate` → FULL or LITE pathway |
 | Connect ElevenLabs Agents to an avatar | `liveavatar-integrate` → LITE + ElevenLabs pathway |
 | Debug a silent or broken avatar | `liveavatar-debug` |
+| Share feedback about the integration experience | `liveavatar-feedback` |
 
 ## Example Prompts
 
@@ -74,6 +76,10 @@ skill-name/
 "My LiveAvatar avatar is silent, help me debug"
 
 "Create a sandbox session to test LiveAvatar"
+
+"I want to give feedback about the LiveAvatar integration"
+
+"This integration is frustrating, let me report this"
 ```
 
 ## Requirements
