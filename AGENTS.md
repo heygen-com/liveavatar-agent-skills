@@ -18,7 +18,9 @@ liveavatar-agent-skills/
     │       ├── embed-guide.md        # Embed implementation
     │       ├── full-mode-guide.md    # FULL Mode + Custom LLM/TTS/PTT
     │       └── lite-mode-guide.md    # LITE Mode + audio format + plugins
-    └── liveavatar-debug/             # Troubleshooting
+    ├── liveavatar-debug/             # Troubleshooting
+    │   └── SKILL.md
+    └── liveavatar-feedback/          # Post-integration feedback collection
         └── SKILL.md
 ```
 
