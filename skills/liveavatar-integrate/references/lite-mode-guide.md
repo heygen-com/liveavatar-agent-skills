@@ -92,6 +92,8 @@ After connecting to `ws_url`, wait for:
 
 **`agent.speak_end` is required** after sending audio. Without it, the avatar won't transition to idle/listening.
 
+**`agent.start_listening` / `agent.stop_listening`** control the avatar's visual listening state. When listening is active, the avatar appears attentive — nodding, maintaining eye contact, showing engaged body language. When stopped, the avatar returns to a neutral idle pose. Use `start_listening` when the user begins speaking and `stop_listening` when they finish, so the avatar reacts naturally to conversation turns.
+
 ### Events you receive
 
 | Event | Payload |
@@ -99,6 +101,55 @@ After connecting to `ws_url`, wait for:
 | `session.state_updated` | `{"state": "connected" \| "connecting" \| "closed" \| "closing"}` |
 | `agent.speak_started` | `{"event_id": "...", "task": {"id": "..."}}` |
 | `agent.speak_ended` | `{"event_id": "...", "task": {"id": "..."}}` |
+
+## Conversation Turn Orchestration
+
+For conversational use cases, follow this turn cycle to keep the avatar's visual state in sync with the conversation:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. User starts speaking                                │
+│     → send agent.start_listening                        │
+│     → avatar becomes attentive (nods, eye contact)      │
+│                                                         │
+│  2. User finishes speaking                              │
+│     → send agent.stop_listening                         │
+│     → run your pipeline: STT → LLM → TTS               │
+│                                                         │
+│  3. Stream TTS audio                                    │
+│     → send agent.speak chunks (same event_id)           │
+│     → send agent.speak_end when stream finishes         │
+│     → avatar lip-syncs to audio                         │
+│                                                         │
+│  4. Avatar finishes speaking                            │
+│     → receive agent.speak_ended from server             │
+│     → send agent.start_listening                        │
+│     → ready for next turn                               │
+│                                                         │
+│  ✕  User interrupts mid-speech                          │
+│     → stop your send loop                               │
+│     → send agent.interrupt                              │
+│     → send agent.start_listening                        │
+│     → go to step 2 when user finishes                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+```python
+# Pseudocode — full conversation loop
+while session_active:
+    start_listening(ws)
+    user_audio = wait_for_user_speech()      # Your VAD / STT
+    stop_listening(ws)
+
+    text = transcribe(user_audio)            # Your STT
+    response = llm_generate(text)            # Your LLM
+    tts_stream = tts_synthesize(response)    # Your TTS (PCM 24KHz)
+
+    stream_audio(ws, tts_stream)             # See "Streaming TTS audio" below
+    wait_for_event(ws, "agent.speak_ended")  # Avatar done speaking
+```
+
+**This is the recommended pattern for any conversational LITE integration.** The key is always bookending the user's turn with `start_listening` / `stop_listening` so the avatar visually reacts, and always waiting for `agent.speak_ended` before starting the next listening cycle.
 
 ## Audio Format
 
@@ -111,10 +162,12 @@ After connecting to `ws_url`, wait for:
 | Sample rate | **24,000 Hz** |
 | Channels | Mono |
 | Encoding | Base64 |
-| Chunk size | ~1 second recommended |
+| Chunk size | 600ms first chunk, 1s subsequent |
 | Max per packet | 1 MB |
 
 **Wrong sample rate = garbled or silent avatar. No error returned.**
+
+**Best practice: configure your TTS provider to output PCM 24KHz directly.** Most providers (ElevenLabs, OpenAI, Google, Azure) have an output format / sample rate setting. This avoids resampling entirely. For example, ElevenLabs lets you set `output_format: "pcm_24000"` in the API request.
 
 ### Python: Send audio
 
@@ -136,11 +189,14 @@ def send_audio(ws, pcm_bytes_24khz, event_id):
 ### Python: Resample to 24KHz
 
 ```python
-import audioop
+import numpy as np
 
-def resample_to_24k(pcm_bytes, original_rate, sample_width=2):
-    resampled, _ = audioop.ratecv(pcm_bytes, sample_width, 1, original_rate, 24000, None)
-    return resampled
+def resample_to_24k(pcm_bytes: bytes, original_rate: int) -> bytes:
+    samples = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float64)
+    new_length = int(len(samples) * 24000 / original_rate)
+    indices = np.linspace(0, len(samples) - 1, new_length)
+    resampled = np.interp(indices, np.arange(len(samples)), samples)
+    return np.clip(resampled, -32768, 32767).astype(np.int16).tobytes()
 ```
 
 ### Node.js: Send audio
@@ -156,6 +212,119 @@ function sendAudio(ws, pcmBuffer) {
     type: 'agent.speak_end', event_id: eventId
   }));
 }
+```
+
+### Streaming TTS audio
+
+When streaming TTS output, send chunks under the **same `event_id`** as they arrive. Use a larger first chunk (600ms) to let the avatar buffer, then 1s chunks after that. Send `agent.speak_end` once after the stream ends.
+
+```python
+import base64, json
+from uuid import uuid4
+
+BYTES_PER_SEC = 48_000  # 24KHz × 16-bit mono = 48,000 bytes/sec
+FIRST_CHUNK = int(BYTES_PER_SEC * 0.6)  # 600ms — initial buffer
+NEXT_CHUNK = BYTES_PER_SEC              # 1s — subsequent chunks
+
+def stream_audio(ws, tts_stream):
+    """Stream TTS audio chunks to LiveAvatar as they arrive."""
+    event_id = f"speak-{uuid4()}"
+    buffer = b""
+    first = True
+
+    for pcm_data in tts_stream:
+        buffer += pcm_data
+        target = FIRST_CHUNK if first else NEXT_CHUNK
+
+        while len(buffer) >= target:
+            chunk, buffer = buffer[:target], buffer[target:]
+            ws.send(json.dumps({
+                "type": "agent.speak",
+                "event_id": event_id,
+                "audio": base64.b64encode(chunk).decode()
+            }))
+            first = False
+            target = NEXT_CHUNK
+
+    # Flush remaining audio
+    if buffer:
+        ws.send(json.dumps({
+            "type": "agent.speak",
+            "event_id": event_id,
+            "audio": base64.b64encode(buffer).decode()
+        }))
+
+    ws.send(json.dumps({
+        "type": "agent.speak_end",
+        "event_id": event_id
+    }))
+    # Server returns agent.speak_ended when the avatar finishes speaking
+```
+
+### Interrupting during a stream
+
+If the user speaks while you're streaming audio, stop sending chunks and send `agent.interrupt`:
+
+```python
+import threading
+
+streaming = threading.Event()
+
+def stream_audio(ws, tts_stream):
+    event_id = f"speak-{uuid4()}"
+    streaming.set()
+    buffer = b""
+    first = True
+
+    for pcm_data in tts_stream:
+        if not streaming.is_set():
+            break
+        buffer += pcm_data
+        target = FIRST_CHUNK if first else NEXT_CHUNK
+
+        while len(buffer) >= target:
+            if not streaming.is_set():
+                break
+            chunk, buffer = buffer[:target], buffer[target:]
+            ws.send(json.dumps({
+                "type": "agent.speak",
+                "event_id": event_id,
+                "audio": base64.b64encode(chunk).decode()
+            }))
+            first = False
+            target = NEXT_CHUNK
+
+    if streaming.is_set() and buffer:
+        ws.send(json.dumps({
+            "type": "agent.speak",
+            "event_id": event_id,
+            "audio": base64.b64encode(buffer).decode()
+        }))
+
+    ws.send(json.dumps({
+        "type": "agent.speak_end",
+        "event_id": event_id
+    }))
+
+def interrupt(ws):
+    streaming.clear()  # Stop sending chunks
+    ws.send(json.dumps({"type": "agent.interrupt"}))
+```
+
+### Keep-alive
+
+Sessions time out after 5 minutes of inactivity. Send a keep-alive every 2-3 minutes:
+
+```python
+import time, threading
+
+def keep_alive_loop(ws, interval=120):
+    while True:
+        time.sleep(interval)
+        ws.send(json.dumps({
+            "type": "session.keep_alive",
+            "event_id": f"keepalive-{uuid4()}"
+        }))
 ```
 
 ### Debug: Test tone
@@ -253,6 +422,17 @@ curl -X POST https://api.liveavatar.com/v1/secrets \
 
 ~1 min sessions, no credits.
 
+## Session Teardown
+
+Stop a session when you're done to free resources and stop credit usage:
+
+```bash
+curl -X DELETE https://api.liveavatar.com/v1/sessions \
+  -H "Authorization: Bearer <session_token>"
+```
+
+Close the WebSocket connection after the DELETE call returns. If the WebSocket drops unexpectedly, the session will auto-terminate after the 5-minute inactivity timeout.
+
 ## Gotchas
 
 1. **Audio format is king.** PCM 16-bit, 24KHz, base64. Wrong format = garbled with NO error.
@@ -261,3 +441,6 @@ curl -X POST https://api.liveavatar.com/v1/secrets \
 4. **ElevenLabs plugin is a hybrid.** Configured as LITE but uses FULL Mode's event system.
 5. **`agent.speak_end` is required.** Without it, avatar won't transition states.
 6. **5-minute timeout.** Send `session.keep_alive` every 2-3 minutes.
+7. **Same `event_id` for all chunks in one utterance.** Each `agent.speak` chunk within a single response must share the same `event_id`. Using different IDs per chunk will break playback.
+8. **Interrupt requires stopping your send loop.** Sending `agent.interrupt` alone isn't enough — you must also stop sending remaining audio chunks, or they'll queue up and play after the interrupt.
+9. **Teardown stops credit usage.** Always `DELETE /v1/sessions` when done. Orphaned sessions burn credits until the 5-minute timeout kills them.
