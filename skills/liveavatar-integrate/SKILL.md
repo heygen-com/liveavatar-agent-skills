@@ -121,6 +121,18 @@ Read the appropriate reference guide and implement. Every guide follows the same
 
 **Start with sandbox.** `is_sandbox: true`, avatar ID `dd73ea75-1218-4ef3-92ce-606d5f7fbc0a`. Free, ~1 min sessions. Swap to production avatar when ready.
 
+### LITE Mode: Fitting into an existing pipeline
+
+LITE users almost always have a working conversational system already. **Do not ask them to rebuild their pipeline.** Instead, map their existing components onto the LITE turn cycle:
+
+1. **Identify their current flow.** Read their code to understand how conversation turns work today — where does user audio come in, how does it reach the LLM, how does TTS output get delivered? Look for their event loop, message handler, or turn manager.
+2. **Find the integration points.** You need to hook into three moments in their existing flow:
+   - **User starts/stops speaking** → add `agent.start_listening` / `agent.stop_listening`
+   - **TTS produces audio** → route PCM output to `agent.speak` chunks over WebSocket instead of (or in addition to) their current audio output
+   - **Response finishes** → send `agent.speak_end` and wait for `agent.speak_ended`
+3. **Adapt, don't replace.** If they have a working turn manager, add LiveAvatar calls into it. If they stream TTS to a browser via WebSocket already, tap into that same stream. The goal is the minimum change to get avatar video synced to their existing audio flow.
+4. **Verify audio format last.** Once the wiring is in place, confirm their TTS outputs PCM 16-bit 24KHz. If not, either configure the TTS provider's output format or add resampling at the integration point.
+
 ## What to consult
 
 - [references/embed-guide.md](references/embed-guide.md) — Embed implementation
