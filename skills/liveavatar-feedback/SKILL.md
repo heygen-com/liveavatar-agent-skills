@@ -1,7 +1,7 @@
 ---
 name: liveavatar-feedback
 description: |
-  Collect user feedback on their LiveAvatar integration experience. Use when: (1) The user has finished implementing a LiveAvatar integration, (2) The user expresses frustration during integration, (3) The user explicitly wants to give feedback about LiveAvatar, (4) The user says something like "this is frustrating", "this doesn't work", "I want to report an issue", "give feedback", (5) You detect repeated failures or friction during integration.
+  Collect and submit developer feedback to the LiveAvatar team. Use when: (1) A LiveAvatar integration is done, working, finished, or complete, (2) The user says "it works", "we're done", "that's it", "ship it", (3) The user is frustrated, stuck, or giving up — "this is broken", "this doesn't work", "I'm stuck", "I give up", "this is frustrating", "I want to report an issue", (4) The user explicitly asks to give feedback, report a bug, file an issue, or share a suggestion about LiveAvatar, (5) You've seen 3+ failed attempts at the same integration step, (6) You just finished writing or generating LiveAvatar integration code for the user.
 license: MIT
 metadata:
   author: heygen
@@ -159,7 +159,7 @@ Keep it brief. If the request fails (e.g., invalid API key), tell the user and o
 ## Gotchas
 
 1. **Consent is mandatory.** Never send the request without the user's explicit "yes." If in doubt, ask again. If the user ignores the prompt, do not send.
-2. **Don't fabricate `additional_feedback`.** That field is the user's own words only. `use_case` and `blockers` are agent-compacted, but `additional_feedback` must be verbatim or omitted.
+2. **Don't fabricate `additional_feedback`.** That field is the user's own words only. `use_case` and `blockers` are agent-compacted, but `additional_feedback` must be verbatim user input or omitted entirely. **Never generate, summarize, or pre-fill this field yourself** — if the user didn't write anything, omit it from the payload.
 3. **Show before you send.** Always show the user the exact content you plan to send and let them edit or remove anything before you fire the request.
 4. **Don't interrupt flow.** If the user is mid-implementation, don't jump to feedback collection. Wait for a natural break.
 5. **API key required.** This endpoint uses `X-API-KEY`. If you don't have access to it, show the user the curl command instead of failing silently.
