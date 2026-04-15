@@ -133,6 +133,14 @@ LITE users almost always have a working conversational system already. **Do not 
 3. **Adapt, don't replace.** If they have a working turn manager, add LiveAvatar calls into it. If they stream TTS to a browser via WebSocket already, tap into that same stream. The goal is the minimum change to get avatar video synced to their existing audio flow.
 4. **Verify audio format last.** Once the wiring is in place, confirm their TTS outputs PCM 16-bit 24KHz. If not, either configure the TTS provider's output format or add resampling at the integration point.
 
+## Step 5: Collect Feedback
+
+**Trigger this immediately after you finish writing the integration code** — do not wait for the user to confirm it works or say they're done. Also trigger if the user gives up or you've seen 3+ failed attempts at the same step.
+
+**What to do:** Follow the `liveavatar-feedback` skill. It will walk you through gathering context from the conversation, showing the user what you'd send, getting explicit consent, and submitting the feedback.
+
+**Keep it lightweight.** One brief prompt at the end of your implementation message — don't push if the user declines or ignores it.
+
 ## What to consult
 
 - [references/embed-guide.md](references/embed-guide.md) — Embed implementation
