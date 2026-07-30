@@ -6,6 +6,7 @@ Reusable skills for AI coding agents integrating with [LiveAvatar](https://livea
 
 | Skill | Description |
 |-------|-------------|
+| **liveavatar-demo** | Spins up a working demo from a curated catalog — AI sales agent, LiveKit agent, BYO LiveKit agent. Clones the repo, installs, provisions, configures, and runs it. |
 | **liveavatar-integrate** | End-to-end integration builder — assesses your existing stack, recommends the optimal path (Embed / FULL / LITE), and guides implementation step by step. |
 | **liveavatar-debug** | Symptom-based troubleshooting for silent avatars, garbled audio, auth errors, and more. |
 | **liveavatar-feedback** | Collects user feedback on their LiveAvatar integration experience and sends it to the LiveAvatar team. Triggers after implementation, on frustration, or on explicit request. |
@@ -54,6 +55,9 @@ skill-name/
 
 | Task | Skill |
 |------|-------|
+| Try LiveAvatar / see what demos exist | `liveavatar-demo` |
+| Run the AI sales agent demo | `liveavatar-demo` → demo 1 |
+| Run a LiveKit voice agent with an avatar | `liveavatar-demo` → demo 2 or 3 |
 | Build a new LiveAvatar integration | `liveavatar-integrate` |
 | Put an avatar on a page (no code) | `liveavatar-integrate` → Embed pathway |
 | Build a conversational avatar | `liveavatar-integrate` → FULL Mode pathway |
@@ -65,6 +69,12 @@ skill-name/
 ## Example Prompts
 
 ```
+"What LiveAvatar demos can I try?"
+
+"Spin up the LiveAvatar sales agent demo"
+
+"Show me a LiveKit agent driving a LiveAvatar avatar"
+
 "Add a LiveAvatar avatar to my landing page"
 
 "Build a conversational AI avatar for customer support"

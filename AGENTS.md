@@ -12,6 +12,11 @@ liveavatar-agent-skills/
 ├── CONTRIBUTING.md                  # Contribution guidelines
 ├── package.json                     # For npx skills add
 └── skills/
+    ├── liveavatar-demo/               # Curated demo catalog → clone, configure, run
+    │   ├── SKILL.md                  # Catalog, routing, preflight, handoff
+    │   └── references/
+    │       ├── sales-agent.md        # Demo 1: Next.js AI sales agent
+    │       └── livekit-agent.md      # Demos 2+3: LiveKit agent (hosted + BYO room)
     ├── liveavatar-integrate/         # End-to-end integration builder
     │   ├── SKILL.md                  # Discovery, routing, golden pathways
     │   └── references/
@@ -28,7 +33,7 @@ liveavatar-agent-skills/
 
 ### Design Principles
 
-1. **Two skills, clear responsibilities.** `liveavatar-integrate` = discovery → recommendation → implementation. `liveavatar-debug` = troubleshooting.
+1. **Clear responsibilities per skill.** `liveavatar-demo` = run someone else's working code. `liveavatar-integrate` = discovery → recommendation → implementation in the user's own code. `liveavatar-debug` = troubleshooting. `liveavatar-feedback` = feedback collection.
 2. **`liveavatar-integrate` is the main skill.** It scans the user's codebase, asks clarifying questions if needed, picks the best pathway, and walks through implementation. All three integration paths (Embed, FULL, LITE) live here as reference guides.
 3. **Pit of success.** Always default to the simplest integration. Embed > FULL > LITE.
 4. **Gotcha-driven.** Lead with what breaks, not what works. Silent failures are the biggest enemy.
