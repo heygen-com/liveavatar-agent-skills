@@ -8,7 +8,7 @@ User audio --> [LiveAvatar: ASR -> LLM -> TTS -> Video] --> Avatar stream
 
 ## Prerequisites
 
-1. **API key** — https://app.liveavatar.com. Never expose to frontend.
+1. **API key** — https://app.liveavatar.com/developers. Never expose to frontend.
 2. **Context ID** — create one below. **Without a context, the avatar is silent (no error thrown).**
 3. **Avatar ID** — dashboard or `GET /v1/avatars`
 4. **Voice ID** — optional for video avatars, **required for image avatars**. `GET /v1/voices`

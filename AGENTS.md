@@ -16,7 +16,8 @@ liveavatar-agent-skills/
     │   ├── SKILL.md                  # Catalog, routing, preflight, handoff
     │   └── references/
     │       ├── sales-agent.md        # Demo 1: Next.js AI sales agent
-    │       └── livekit-agent.md      # Demos 2+3: LiveKit agent (hosted + BYO room)
+    │       ├── livekit-agent.md      # Demos 2+3: LiveKit agent (hosted + BYO room)
+    │       └── gpt-live-demos.md     # Demo 4: GPT-Live × Hyperframes (one repo, several branches)
     ├── liveavatar-integrate/         # End-to-end integration builder
     │   ├── SKILL.md                  # Discovery, routing, golden pathways
     │   └── references/
@@ -39,6 +40,7 @@ liveavatar-agent-skills/
 4. **Gotcha-driven.** Lead with what breaks, not what works. Silent failures are the biggest enemy.
 5. **Backend/frontend split is sacred.** Every code block must label where it runs and which auth header to use.
 6. **Smaller skills inline everything.** `liveavatar-debug` has no `references/` directory. Only split into references when SKILL.md would exceed ~500 lines.
+7. **Demo repos document themselves.** `liveavatar-demo` clones a repo, then reads that repo's own agent docs (`AGENTS.md` → `CLAUDE.md` → `docs/` + README) as the setup source of truth — repo docs are always newer than this skill. A demo's `references/` file holds only what the repo can't know: account-level gotchas, billing semantics, routing, agent-safe paths through interactive scripts. When a demo repo gains a real `AGENTS.md`, shrink its reference here accordingly (the gpt-live-demos reference is the model; sales-agent carries full setup detail only because its repo has no agent docs).
 
 ### Naming Conventions
 
@@ -67,7 +69,7 @@ Descriptions must be **trigger-rich** — include explicit scenarios and keyword
 
 - **Code-first** — include copy-pasteable curl commands and code snippets. Developers skim prose and copy code.
 - **Progressive disclosure** — SKILL.md has behavioral guidance, references/ has API specifics.
-- **Each skill is self-contained** — no cross-skill references. Each must stand alone.
+- **Each skill is self-contained** — no cross-skill references, with one deliberate exception: skills may end with a feedback hook ("follow `liveavatar-feedback` if available; skip silently if not"). The hook must degrade gracefully when the skill is absent.
 - **Keep SKILL.md under 500 lines** — move details to `references/`.
 
 ## Adding a New Skill
@@ -76,7 +78,7 @@ Descriptions must be **trigger-rich** — include explicit scenarios and keyword
 2. Add optional `references/` directory if SKILL.md would exceed ~500 lines
 3. Add the skill to `README.md` skills table
 4. Update `AGENTS.md` structure diagram
-5. Do NOT add cross-references to other skills — each skill must stand alone
+5. Do NOT add cross-references to other skills — each skill must stand alone (sole exception: a gracefully-degrading `liveavatar-feedback` hook)
 
 ## Updating Existing Skills
 
