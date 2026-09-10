@@ -6,7 +6,7 @@ Reusable skills for AI coding agents integrating with [LiveAvatar](https://livea
 
 | Skill | Description |
 |-------|-------------|
-| **liveavatar-demo** | Spins up a working demo from a curated catalog — AI sales agent, LiveKit agent, BYO LiveKit agent. Clones the repo, installs, provisions, configures, and runs it. |
+| **liveavatar-demo** | Spins up a working demo from a curated catalog — AI sales agent, LiveKit agent, BYO LiveKit agent, and GPT-Live × Hyperframes demos (language tutor, support agent, poker coach — same architecture, built to be repurposed). Clones the repo, installs, provisions, configures, and runs it. |
 | **liveavatar-integrate** | End-to-end integration builder — assesses your existing stack, recommends the optimal path (Embed / FULL / LITE), and guides implementation step by step. |
 | **liveavatar-debug** | Symptom-based troubleshooting for silent avatars, garbled audio, auth errors, and more. |
 | **liveavatar-feedback** | Collects user feedback on their LiveAvatar integration experience and sends it to the LiveAvatar team. Triggers after implementation, on frustration, or on explicit request. |
@@ -58,6 +58,7 @@ skill-name/
 | Try LiveAvatar / see what demos exist | `liveavatar-demo` |
 | Run the AI sales agent demo | `liveavatar-demo` → demo 1 |
 | Run a LiveKit voice agent with an avatar | `liveavatar-demo` → demo 2 or 3 |
+| Run a GPT-Live speech-to-speech demo and reshape it | `liveavatar-demo` → demo 4 |
 | Build a new LiveAvatar integration | `liveavatar-integrate` |
 | Put an avatar on a page (no code) | `liveavatar-integrate` → Embed pathway |
 | Build a conversational avatar | `liveavatar-integrate` → FULL Mode pathway |
@@ -74,6 +75,10 @@ skill-name/
 "Spin up the LiveAvatar sales agent demo"
 
 "Show me a LiveKit agent driving a LiveAvatar avatar"
+
+"Run the LiveAvatar language tutor demo with GPT-Live"
+
+"Turn the GPT-Live poker demo into a trivia host for my product"
 
 "Add a LiveAvatar avatar to my landing page"
 
@@ -94,7 +99,7 @@ skill-name/
 
 ## Requirements
 
-- LiveAvatar API key (get one at [LiveAvatar Dashboard](https://app.liveavatar.com))
+- LiveAvatar API key (get one at https://app.liveavatar.com/developers)
 - Claude Code CLI (or any skills-compatible agent)
 
 ## API Reference

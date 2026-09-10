@@ -10,7 +10,7 @@ User audio --> [Your stack: ASR -> LLM -> TTS] --> audio --> [LiveAvatar: Video]
 
 ## Prerequisites
 
-1. **API key** — https://app.liveavatar.com
+1. **API key** — https://app.liveavatar.com/developers
 2. **Avatar ID** — dashboard or `GET /v1/avatars`
 3. **Your TTS must output PCM 16-bit, 24KHz** — wrong format = garbled avatar with NO error
 

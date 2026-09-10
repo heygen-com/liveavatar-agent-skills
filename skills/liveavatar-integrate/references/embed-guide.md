@@ -4,7 +4,7 @@ One API call, one iframe. No SDK, no WebRTC, no event handling.
 
 ## Prerequisites
 
-- LiveAvatar API key (get one at https://app.liveavatar.com)
+- LiveAvatar API key (get one at https://app.liveavatar.com/developers)
 - An `avatar_id` — browse on the dashboard or `GET /v1/avatars`
 - A `context_id` — create via `POST /v1/contexts` with a `prompt` field
 
